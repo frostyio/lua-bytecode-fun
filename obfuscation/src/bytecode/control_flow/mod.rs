@@ -1,2 +1,4 @@
 mod flatten;
-pub use flatten::Flatten;
+pub mod registers;
+pub use flatten::flatten;
+pub mod flattening_fails;

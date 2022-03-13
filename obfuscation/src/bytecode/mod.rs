@@ -3,9 +3,29 @@ use bytecode::lua51::{luac, deserialize_bytecode};
 
 mod control_flow;
 
+pub struct VMConfig {
+    max_stack_size: usize
+}
+
+// assuming all registers are u8 currently; will change in the future
+// type U8 = u8;
+pub enum VM {
+    Lua51
+}
+impl VM {
+    pub fn get(&self) -> VMConfig {
+        match self {
+            Self::Lua51 => VMConfig {
+                max_stack_size: 250
+            }
+        }
+    }
+}
+
 pub struct Options {
     pub flatten_control_flow: bool,
-    pub scramble_opcodes: bool
+    pub scramble_opcodes: bool,
+    pub target_vm: VM
 }
 
 pub struct Obfuscate {
@@ -29,11 +49,8 @@ impl Obfuscate {
 
     pub fn obfuscate(&mut self, ctx: Context) {
 		if self.options.flatten_control_flow {
-			let mut flatten = control_flow::Flatten::new(ctx);
-            flatten.flatten();
-            self.include("pop");
-            self.include("push");
-            self.ctx = Some(flatten.get());
+			let flattened = control_flow::flatten(&ctx, &ctx.chunk, &self.options);
+            self.ctx = Some(flattened);
 		}
 
         // add includes to protos

@@ -361,6 +361,7 @@ pub fn flatten(flat_ctx: &mut Context, c: &Proto) -> u32 {
 	let queue_3 = Reg(get_new_register(&mut register_offset)); // loadk :: 0
 	let queue_4 = Reg(get_new_register(&mut register_offset));
 
+
 	let mut max_block_ip: u32 = 0;
 
 	// flatten all inner closures
@@ -370,6 +371,9 @@ pub fn flatten(flat_ctx: &mut Context, c: &Proto) -> u32 {
 
 	// closures used by the proto vs global functions
 	let mut function_registers: HashMap<u32, usize> = HashMap::new();
+
+	let mut global_blocks: Vec<(usize, Vec<Instruction>, Reg)> = vec![];
+	let mut global_block = get_closure(5) as usize; // will have to make a permament change in the future
 
 	let closure_id = flattened.len();
 	let mut clos_n: i32 = -1;
@@ -499,35 +503,74 @@ pub fn flatten(flat_ctx: &mut Context, c: &Proto) -> u32 {
 					}
 					Instr::GetGlobal(a, _b) => {
 						function_registers.remove(&(a.0 as u32));
+						
+						let pointer = global_block;
+						global_block += 1;
+
+						/*
+						todo:
+						allocate registers for nparams + isvararg in front of new global block
+						implement parameters using the allocated registers
+						implement the function return queue for block
+						create a return table in a new register? and unpack it for return args???
+						
+						and done for closures?
+						*/
+
+						let block = vec![
+							Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(a, _b)),
+							// Instruction::new(Opcode::LoadK, Instr::LoadK(Reg(100), table_kst)),
+							Instruction::new(Opcode::Call, Instr::Call(a, 1, 1)),
+							
+						];
+						global_blocks.push((pointer, block, a));
+						println!("global at {pointer}");
+
+						let chunk_kst = flat_ctx.get_or_add_constant(Constants::Number(pointer as f64));
+						clone.0 = Opcode::LoadK;
+						clone.1 = Instr::LoadK(a, Kst(chunk_kst));
+						clone.2 = clone.1.get_opmode();
 					}
 					Instr::Call(a, _b, _c) => {
-						let target_closure = a.0;
-						let contains = function_registers.contains_key(&(a.0 as u32));
-						println!("looking for closure at reg {}, {}", target_closure, contains);
-						if contains {
-							println!("using closure function, pointing to {}",target_closure as f64);
-							// do_add_instr = false;
-							// code_size -= 1;
-							// target_block = target_closure as f64;
-							add_target = false;
-							clone.0 = Opcode::Move;
-							clone.1 = Instr::Move(block_pointer_r, Reg(target_closure));
-							clone.2 = clone.1.get_opmode();
-							debug.goto_block(i as usize, *function_registers.get(&(a.0 as u32)).unwrap(), true);
+						let mut target_closure = a.0;
+						println!("using closure function, pointing to {}",target_closure as f64);
 
-							// push all global calls to their own block
+						if let Some(pt) = global_blocks.iter().position(|(pt, ..)| { println!("{} {}", pt, target_closure);
+							pt == &(target_closure as usize) }) {
+							// since we can't change the number of arguments on the global call block
+							// we'll have to create a new one. luckily it's a small block
+							let pointer = global_block;
+							global_block += 1;
 
-							// return block queue
-							let kst = Kst(flat_ctx.get_or_add_constant(Constants::Number( next_target )));
-							println!("--- return to kst {:?}", kst);
-							flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(queue_1, table_kst)));
-							flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::GetTable, Instr::GetTable(queue_1, queue_1, RegKst::K(Kst(256 + table_kst3.0)))));
-							flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::Move, Instr::Move(queue_2, Reg(1))));
-							flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::LoadK, Instr::LoadK(queue_3, kst)));
-							flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::Call, Instr::Call(queue_1, 3, 1)));
-						} else {
-							println!("calling global");
+							println!("making anew");
+
+							let mut block = global_blocks[pt].1.clone();
+							// update the call instruction
+							let call = &mut block[1];
+							update_mode(&mut call.2, Op::C, &|_| _b.into());
+
+							global_blocks.push((pointer, block, global_blocks[pt].2));
+							target_closure = pointer as u8;
 						}
+
+						// do_add_instr = false;
+						// code_size -= 1;
+						// target_block = target_closure as f64;
+						add_target = false;
+						clone.0 = Opcode::Move;
+						clone.1 = Instr::Move(block_pointer_r, Reg(target_closure));
+						clone.2 = clone.1.get_opmode();
+						// debug.goto_block(i as usize, *function_registers.get(&(a.0 as u32)).unwrap(), true);
+
+
+						// return block queue
+						let kst = Kst(flat_ctx.get_or_add_constant(Constants::Number( next_target )));
+						println!("--- return to kst {:?}", kst);
+						flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(queue_1, table_kst)));
+						flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::GetTable, Instr::GetTable(queue_1, queue_1, RegKst::K(Kst(256 + table_kst3.0)))));
+						flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::Move, Instr::Move(queue_2, Reg(1))));
+						flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::LoadK, Instr::LoadK(queue_3, kst)));
+						flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::Call, Instr::Call(queue_1, 3, 1)));
 					}
 					
 					Instr::Return(_a, _b) => {
@@ -655,6 +698,21 @@ pub fn flatten(flat_ctx: &mut Context, c: &Proto) -> u32 {
 			}
 		}
 
+		for (pointer, block, reg) in &global_blocks {
+			if block.len() == 0 { continue };
+
+			let pointer_kst = flat_ctx.get_or_add_constant(Constants::Number(*pointer as f64));
+			flat_ctx.add_instruction(flat_ctx.get_max_ip(), 
+			 Instruction::new(Opcode::Eq, Instr::BinCondOp(false, RegKst::R(block_pointer_r), BinCondOp::Eq, RegKst::K(Kst(256 + pointer_kst))))
+			);
+			flat_ctx.add_instruction(flat_ctx.get_max_ip(), 
+			Instruction::new(Opcode::Jump, Instr::Jump(block_pointer_r, (block.len() - 1) as i32)) // is it -1?
+			);
+			for instr in block {
+				flat_ctx.add_instruction(flat_ctx.get_max_ip(), instr.clone());
+			}
+		}
+
 		// end target, proceed to next closure?
 		// let target_pt = flat_ctx.get_or_add_constant(Constants::Number(blocks.len() as f64 + 1f64));
 		// flat_ctx.add_instruction(flat_ctx.get_max_ip(), Instruction::new(Opcode::LoadK, Instr::LoadK(block_pointer_r, Kst(target_pt))));
@@ -758,6 +816,13 @@ impl Flatten {
 	pub fn flatten(&mut self) {
 		let ctx = &mut self.flat_ctx;
 		let max_block = flatten(ctx, &self.ctx.chunk);
+
+
+		// let print = ctx.get_or_add_constant(Constants::String("print".to_string()));
+		// let hello = ctx.get_or_add_constant(Constants::String("SPIKE GAY".to_string()));
+		// ctx.add_instruction(0, Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(Reg(1), Kst(print))));
+		// ctx.add_instruction(1, Instruction::new(Opcode::LoadK, Instr::LoadK(Reg(2), Kst(hello))));
+		// ctx.add_instruction(2, Instruction::new(Opcode::Call, Instr::Call(Reg(1), 2, 1)));
 		
 		self.append_end_flatten_statement(max_block + 1);
 	}

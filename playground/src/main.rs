@@ -31,7 +31,8 @@ fn main() {
 	// obfuscate
 	let options = obfuscation::bytecode::Options {
 		flatten_control_flow: true,
-		scramble_opcodes: false
+		scramble_opcodes: false,
+		target_vm: obfuscation::bytecode::VM::Lua51
 	};
 	let mut obfuscate = obfuscation::bytecode::Obfuscate::new(options); 
 	obfuscate.obfuscate(context);
