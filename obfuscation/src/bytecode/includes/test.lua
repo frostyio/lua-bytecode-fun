@@ -1,3 +1,2 @@
-local a = {}
-print("a")
-table.insert(a, "hi")
+local a ="bbbb"
+print(a:sub(2))

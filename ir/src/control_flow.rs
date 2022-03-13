@@ -54,6 +54,8 @@ impl Mapper {
 					if let Instr::Jump(_, _b) = instruction.1 {
 						//self.add_possible(pc - 1, b + 1)
 						self.possible_edges.insert(pc);
+						self.possible_edges.insert(pc + 1);
+						self.possible_edges.insert((pc as i32 + _b + 1) as usize);
 						continue;
 					}
 				}
@@ -74,12 +76,17 @@ impl Mapper {
 						self.possible_edges.insert(pc + 1);
 					}
 				}
+				Opcode::TForLoop => {
+					if let Instr::TForLoop(_, _sbx) = instruction.1 {
+						self.possible_edges.insert(pc);
+					}
+				}
 				Opcode::NOP => {
 					// self.add_possible(pc, 1);
 				}
-				Opcode::Call => {
+				// Opcode::Call => {
 					
-				}
+				// }
 				// Opcode::Closure => {}
 				Opcode::Return => {}
 				_ => { continue }

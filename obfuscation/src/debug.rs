@@ -3,7 +3,7 @@ use bytecode::lua51::{instruction::{BinCondOp, Instr, RegKst}, Constants};
 enum DebugValue {
 	Closure(usize),
 	Block(usize),
-	GotoBlock(usize, usize),
+	GotoBlock(usize, usize, bool),
 	IfStatement(RegKst, BinCondOp, RegKst),
 	ForPrep(usize),
 	ForLoop(usize)
@@ -54,8 +54,8 @@ impl Debug {
 		self.add_log(DebugValue::Block(id))
 	}
 
-	pub fn goto_block(&mut self, from_id: usize, target_id: usize) {
-		self.add_log(DebugValue::GotoBlock(from_id, target_id))
+	pub fn goto_block(&mut self, from_id: usize, target_id: usize, is_call: bool) {
+		self.add_log(DebugValue::GotoBlock(from_id, target_id, is_call))
 	}
 
 	pub fn for_prep(&mut self, target: usize) {
@@ -79,8 +79,8 @@ impl Debug {
 					output.push(format!("\tNew block at {id}\n"));
 					// self.last_block = *id;
 				},
-				DebugValue::GotoBlock(from_id, target_id) => {
-					output.push(format!("\t\tGoto block from {from_id} to {target_id}\n"))
+				DebugValue::GotoBlock(from_id, target_id, is_call) => {
+					output.push(format!("\t\tGoto block from {from_id} to {target_id}, calling: {is_call}\n"))
 				},
 				DebugValue::IfStatement(kst1, cond, kst2) => {
 					output.push(format!("\t\tIf {} {:?} {} then\n", get_v_from_rk(kst1, constants), cond, get_v_from_rk(kst2, constants)));

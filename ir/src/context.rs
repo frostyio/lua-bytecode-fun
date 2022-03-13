@@ -222,9 +222,9 @@ impl Context {
 
 		// let hello = self.get_or_add_constant(Constants::String("SPIKE GAY".to_string()));
 		// let print = self.get_or_add_constant(Constants::String("print".to_string()));
-		// self.add_instruction(0, Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(Reg(0), Kst(print))));
+		// self.add_instruction(0, Instruction::new(Opcode::GetGlobal, Instr::GetGlobal(block_pointer_r, Kst(print))));
 		// self.add_instruction(1, Instruction::new(Opcode::LoadK, Instr::LoadK(Reg(1), Kst(hello))));
-		// self.add_instruction(2, Instruction::new(Opcode::Call, Instr::Call(Reg(0), 2, 1)));
+		// self.add_instruction(2, Instruction::new(Opcode::Call, Instr::Call(block_pointer_r, 2, 1)));
 
 		// self.view();
 	}

@@ -1,0 +1,43 @@
+instructions: [Instruction(LoadK, LoadK(block_pointer_r, Kst(1)), iABx(0, 1), 44), Instruction(NewTable, NewTable(Reg(1), block_pointer_r, block_pointer_r), iABC(1, 0, 0), 43), Instruction(Le, BinCondOp(false, K(Kst(257)), Le, R(block_pointer_r)), iABC(0, 257, 0), 45), Instruction(Jump, Jump(block_pointer_r, 12), iAsBx(0, 12), 46), 
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(257))), iABC(0, 0, 257), 37), 
+	Instruction(Jump, Jump(block_pointer_r, 6), iAsBx(0, 6), 38), 
+	Instruction(Closure, Closure(Reg(6), 0), iABx(6, 0), 1),
+	Instruction(Move, Move(Reg(7), Reg(6)), iABC(7, 6, 0), 2), 
+	Instruction(LoadK, LoadK(Reg(8), Kst(0)), iABx(8, 0), 3), 
+	Instruction(Call, Call(Reg(7), 2, 1), iABC(7, 2, 1), 4), 
+	Instruction(Return, Return(Reg(6), 1), iABC(6, 1, 0), 5), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(0)), iABx(0, 0), 39), 
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(256))), iABC(0, 0, 256), 40), 
+	Instruction(Jump, Jump(block_pointer_r, 1), iAsBx(0, 1), 41), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(2)), iABx(0, 2), 42), 
+	Instruction(Jump, Jump(block_pointer_r, -14), iAsBx(0, 4294967282), 47), 
+	Instruction(Return, Return(block_pointer_r, 1), iABC(0, 1, 0), 48)
+], 
+constants: [Number(1.0), Number(0.0), Number(-1.0)], prototypes: [Proto {
+	instructions: [Instruction(LoadK, LoadK(block_pointer_r, Kst(2)), iABx(0, 2), 32), Instruction(NewTable, NewTable(Reg(1), block_pointer_r, block_pointer_r), iABC(1, 0, 0), 31), Instruction(Le, BinCondOp(false, K(Kst(258)), Le, R(block_pointer_r)), iABC(0, 258, 0), 33), Instruction(Jump, Jump(block_pointer_r, 24), iAsBx(0, 24), 34), 
+	
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(258))), iABC(0, 0, 258), 12), -- 258, 2, block 0 
+	Instruction(Jump, Jump(block_pointer_r, 5), iAsBx(0, 5), 18), 
+	Instruction(Eq, BinCondOp(false, R(Reg(3)), Eq, K(Kst(256))), iABC(0, 3, 256), 13), 
+	Instruction(Jump, Jump(block_pointer_r, 2), iAsBx(0, 2), 14), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(3)), iABx(0, 3), 15),  -- goto block 2
+	Instruction(Jump, Jump(block_pointer_r, 1), iAsBx(0, 1), 16), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(4)), iABx(0, 4), 17),  -- goto block 4
+
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(259))), iABC(0, 0, 259), 22), -- 259, 3, block 2
+	Instruction(Jump, Jump(block_pointer_r, 4), iAsBx(0, 4), 23),
+	Instruction(GetGlobal, GetGlobal(Reg(4), Kst(1)), iABx(4, 1), 8), 
+	Instruction(Move, Move(Reg(5), Reg(3)), iABC(5, 3, 0), 9), 
+	Instruction(Call, Call(Reg(4), 2, 1), iABC(4, 2, 1), 10), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(5)), iABx(0, 5), 24), -- goto block 3
+
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(261))), iABC(0, 0, 261), 25),  - 261, 5, block 3
+	Instruction(Jump, Jump(block_pointer_r, 2), iAsBx(0, 2), 26),
+	Instruction(Return, Return(Reg(3), 1), iABC(3, 1, 0), 11), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(4)), iABx(0, 4), 27),  -- goto block 4
+
+	Instruction(Eq, BinCondOp(false, R(block_pointer_r), Eq, K(Kst(260))), iABC(0, 0, 260), 28), -- 260, 4, block 4
+	Instruction(Jump, Jump(block_pointer_r, 1), iAsBx(0, 1), 29), 
+	Instruction(LoadK, LoadK(block_pointer_r, Kst(6)), iABx(0, 6), 30), 
+	Instruction(Jump, Jump(block_pointer_r, -26), iAsBx(0, 4294967270), 35), 
+	Instruction(Return, Return(block_pointer_r, 1), iABC(0, 1, 0), 36)], constants: [Number(1.0), String("print"), Number(0.0), Number(2.0), Number(4.0), Number(3.0), Number(-1.0)], prototypes: [], source_lines: None, locals: None, upvals: None }], source_lines: None, locals: None, upvals: None }
